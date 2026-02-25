@@ -397,6 +397,7 @@ header {
     <label>OpenAI Key:</label>
     <input type="password" id="apiKey" placeholder="sk-..." />
   </div>
+  <div id="syncStatus" style="font-size:0.72rem;opacity:0.7;white-space:nowrap;color:white"></div>
 </header>
 
 <div class="layout">
@@ -447,10 +448,48 @@ header {
 let screenshots = [];
 let studyPlan = null;
 
-function save() {
-  try { localStorage.setItem('ilMioPiano_v3', JSON.stringify({ studyPlan })); } catch(e) {}
+const SUPA_URL = 'https://azcprcrvcscobgialwpv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6Y3ByY3J2Y3Njb2JnaWFsd3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDgzNjAsImV4cCI6MjA4NzYyNDM2MH0.6fjcEykxYYXdGu60fYeoD2sRvflatws_jF1ISPmqf9o';
+const USER_ID = 'renata_main'; // single user app
+
+async function save() {
+  try {
+    // Always keep local backup
+    localStorage.setItem('ilMioPiano_v3', JSON.stringify({ studyPlan }));
+    // Save to Supabase
+    const payload = { user_id: USER_ID, plan_data: JSON.stringify(studyPlan) };
+    await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.${USER_ID}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    await fetch(`${SUPA_URL}/rest/v1/study_plan`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { console.warn('Cloud save failed, local backup kept', e); }
 }
-function loadSaved() {
+
+async function loadSaved() {
+  try {
+    // Try cloud first
+    const res = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.${USER_ID}&select=plan_data`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].plan_data) {
+      studyPlan = JSON.parse(rows[0].plan_data);
+      localStorage.setItem('ilMioPiano_v3', JSON.stringify({ studyPlan }));
+      renderPlan();
+      return;
+    }
+  } catch(e) { console.warn('Cloud load failed, trying local', e); }
+  // Fallback to local
   try {
     const d = JSON.parse(localStorage.getItem('ilMioPiano_v3') || '{}');
     if (d.studyPlan) { studyPlan = d.studyPlan; renderPlan(); }
@@ -1023,9 +1062,67 @@ Respond with ONLY valid JSON:
 }
 
 loadSaved();
-const savedKey = sessionStorage.getItem('oai_key');
-if (savedKey) document.getElementById('apiKey').value = savedKey;
-document.getElementById('apiKey').addEventListener('input', e => sessionStorage.setItem('oai_key', e.target.value));
+
+// ---- API KEY SAVE/LOAD ----
+async function saveApiKey(key) {
+  // Save locally
+  try { localStorage.setItem('oai_api_key', key); } catch(e) {}
+  // Save to Supabase in a settings row
+  try {
+    const check = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const existing = await check.json();
+    if (existing && existing.length > 0) {
+      await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ plan_data: key })
+      });
+    } else {
+      await fetch(`${SUPA_URL}/rest/v1/study_plan`, {
+        method: 'POST',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ user_id: 'renata_settings', plan_data: key })
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadApiKey() {
+  // Try Supabase first
+  try {
+    const resp = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings&select=plan_data`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const rows = await resp.json();
+    if (rows && rows.length > 0 && rows[0].plan_data) {
+      document.getElementById('apiKey').value = rows[0].plan_data;
+      try { localStorage.setItem('oai_api_key', rows[0].plan_data); } catch(e) {}
+      return;
+    }
+  } catch(e) {}
+  // Fallback to localStorage
+  try {
+    const local = localStorage.getItem('oai_api_key');
+    if (local) document.getElementById('apiKey').value = local;
+  } catch(e) {}
+}
+
+loadApiKey();
+
+// Auto-save key when user types it
+let keyTimer;
+document.getElementById('apiKey').addEventListener('input', e => {
+  const val = e.target.value.trim();
+  clearTimeout(keyTimer);
+  if (val.startsWith('sk-') && val.length > 20) {
+    keyTimer = setTimeout(() => {
+      saveApiKey(val);
+      showToast('API key saved — won't need to enter it again ✓');
+    }, 1000);
+  }
+});
 </script>
 </body>
 </html>
