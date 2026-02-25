@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Mio Piano 🇮🇹</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F8FF;
+  --surface: #FFFFFF;
+  --sidebar-bg: #E8F0FE;
+  --blue: #2563EB;
+  --blue-light: #DBEAFE;
+  --blue-dark: #1E3A8A;
+  --teal: #0D9488;
+  --teal-light: #CCFBF1;
+  --green: #16A34A;
+  --green-light: #DCFCE7;
+  --amber: #D97706;
+  --amber-light: #FEF3C7;
+  --red-light: #FEE2E2;
+  --red: #DC2626;
+  --text: #1E293B;
+  --text-mid: #64748B;
+  --text-light: #94A3B8;
+  --border: #CBD5E1;
+  --border-light: #E2E8F0;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header {
+  background: var(--blue-dark);
+  color: white;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.header-title { font-family: 'Lora', serif; font-size: 1.2rem; white-space: nowrap; }
+.header-title span { color: #93C5FD; }
+.api-wrap { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 320px; }
+.api-wrap label { font-size: 0.72rem; opacity: 0.7; white-space: nowrap; }
+.api-wrap input {
+  flex: 1; background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 6px 10px; border-radius: 8px;
+  font-size: 0.8rem; min-width: 0;
+}
+.api-wrap input::placeholder { opacity: 0.4; }
+.api-wrap input:focus { outline: none; border-color: #93C5FD; }
+
+.layout { display: flex; min-height: calc(100vh - 54px); }
+
+.sidebar {
+  width: 300px; flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 16px;
+  position: sticky; top: 54px;
+  height: calc(100vh - 54px); overflow-y: auto;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 20px 12px; text-align: center; cursor: pointer;
+  background: white; transition: all 0.2s;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--blue); background: var(--blue-light); }
+.upload-zone .icon { font-size: 2rem; margin-bottom: 8px; }
+.upload-zone p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; }
+.upload-zone strong { color: var(--blue); }
+#fileInput { display: none; }
+
+.thumbs-section { display: none; }
+.thumbs-section h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin-bottom: 8px; }
+.thumb {
+  display: flex; align-items: center; gap: 8px;
+  background: white; border-radius: 8px; padding: 6px 8px;
+  margin-bottom: 6px; border: 1px solid var(--border-light); font-size: 0.78rem;
+}
+.thumb img { width: 36px; height: 28px; object-fit: cover; border-radius: 4px; }
+.thumb .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thumb .tdel { cursor: pointer; color: var(--text-light); padding: 2px 4px; border-radius: 4px; }
+.thumb .tdel:hover { color: var(--red); background: var(--red-light); }
+
+.analyze-btn {
+  background: var(--blue); color: white; border: none;
+  border-radius: 10px; padding: 13px 16px;
+  font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; width: 100%; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.analyze-btn:hover { background: var(--blue-dark); }
+.analyze-btn:active { transform: scale(0.97); }
+.analyze-btn:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; transform: none; }
+
+.how-it-works {
+  background: white; border-radius: 10px; padding: 12px 14px;
+  font-size: 0.78rem; color: var(--text-mid); line-height: 1.7;
+  border: 1px solid var(--border-light);
+}
+.how-it-works strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+.main { flex: 1; padding: 24px 20px; overflow-y: auto; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 60vh; text-align: center; padding: 32px;
+}
+.empty-state .big { font-size: 3.5rem; margin-bottom: 16px; }
+.empty-state h2 { font-family: 'Lora', serif; font-size: 1.5rem; margin-bottom: 10px; }
+.empty-state p { color: var(--text-mid); line-height: 1.7; max-width: 360px; font-size: 0.92rem; }
+
+.plan-top { margin-bottom: 20px; }
+.plan-top h2 { font-family: 'Lora', serif; font-size: 1.5rem; margin-bottom: 6px; }
+.plan-summary { color: var(--text-mid); font-size: 0.88rem; line-height: 1.6; margin-bottom: 12px; }
+.updated-pill {
+  display: inline-block; background: var(--teal-light); color: var(--teal);
+  font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+}
+
+.progress-card {
+  background: white; border: 1px solid var(--border-light);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px;
+}
+.progress-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-label-row span { font-size: 0.8rem; color: var(--text-mid); }
+.progress-label-row strong { font-size: 0.88rem; }
+.track { background: var(--border-light); border-radius: 999px; height: 8px; overflow: hidden; }
+.fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--teal)); transition: width 0.7s ease; }
+
+.section-head {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-mid); margin: 24px 0 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-head::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+
+.topic-card {
+  background: white; border: 1px solid var(--border-light);
+  border-radius: var(--radius); margin-bottom: 10px;
+  overflow: hidden; transition: box-shadow 0.2s, border-color 0.2s;
+}
+.topic-card:hover { box-shadow: var(--shadow); }
+.topic-card.review { border-color: var(--amber); }
+.topic-card.current { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light); }
+
+.card-header {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; cursor: pointer; user-select: none;
+}
+.card-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--blue-light); color: var(--blue);
+  font-size: 0.75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.topic-card.review .card-num { background: var(--amber-light); color: var(--amber); }
+.card-info { flex: 1; min-width: 0; }
+.card-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 3px; }
+.card-desc { font-size: 0.8rem; color: var(--text-mid); line-height: 1.4; }
+.card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.status-pill {
+  font-size: 0.68rem; font-weight: 600; padding: 2px 9px;
+  border-radius: 20px; white-space: nowrap;
+}
+.status-pill.upcoming { background: var(--blue-light); color: var(--blue); }
+.status-pill.review { background: var(--amber-light); color: var(--amber); }
+.chevron { color: var(--text-light); font-size: 0.8rem; transition: transform 0.2s; }
+.topic-card.open .chevron { transform: rotate(180deg); }
+
+.lesson-body { display: none; border-top: 1px solid var(--border-light); }
+.topic-card.open .lesson-body { display: block; }
+
+.lesson-section { padding: 16px 18px; border-bottom: 1px solid var(--border-light); }
+.lesson-section:last-child { border-bottom: none; }
+.lesson-section-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.lbl-explain { color: var(--blue); }
+.lbl-examples { color: var(--teal); }
+.lbl-mistakes { color: var(--red); }
+.lbl-exercise { color: var(--amber); }
+
+.lesson-text { font-size: 0.88rem; line-height: 1.8; }
+.lesson-table-wrap { overflow-x: auto; margin: 12px 0; }
+.lesson-table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+.lesson-table th { background: var(--blue-dark); color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+.lesson-table td { padding: 8px 12px; border-bottom: 1px solid var(--border-light); }
+.lesson-table tr:nth-child(even) td { background: var(--bg); }
+.lesson-table tr:last-child td { border-bottom: none; }
+
+.examples-grid { display: flex; flex-direction: column; gap: 8px; }
+.example-row {
+  background: var(--teal-light); border-radius: 8px; padding: 10px 14px;
+}
+.example-it { font-weight: 600; font-size: 0.9rem; color: #0F766E; margin-bottom: 2px; }
+.example-en { font-size: 0.82rem; color: var(--text-mid); }
+
+.exercise-box { background: var(--amber-light); border-radius: 10px; padding: 14px 16px; }
+.exercise-q { font-size: 0.88rem; font-weight: 500; margin-bottom: 10px; line-height: 1.5; }
+.exercise-input {
+  width: 100%; border: 1px solid #FCD34D; border-radius: 8px;
+  padding: 9px 12px; font-size: 0.88rem; font-family: 'Inter', sans-serif;
+  background: white; margin-bottom: 8px;
+}
+.exercise-input:focus { outline: none; border-color: var(--amber); }
+.exercise-btn {
+  background: var(--amber); color: white; border: none;
+  border-radius: 8px; padding: 8px 16px; font-size: 0.82rem;
+  font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.exercise-btn:hover { background: #B45309; }
+.exercise-answer {
+  margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+  font-size: 0.84rem; line-height: 1.5; display: none;
+  background: var(--green-light); color: var(--green);
+}
+.exercise-answer.show { display: block; }
+
+.card-actions {
+  padding: 12px 16px; display: flex; gap: 8px; flex-wrap: wrap;
+  border-top: 1px solid var(--border-light); background: #FAFBFC;
+}
+.btn-done {
+  background: var(--green); color: white; border: none;
+  border-radius: 8px; padding: 8px 16px; font-size: 0.82rem;
+  font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.btn-done:hover { background: #15803D; }
+.btn-flag {
+  background: white; color: var(--text-mid); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 16px; font-size: 0.82rem;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.btn-flag:hover { border-color: var(--amber); color: var(--amber); }
+
+.done-list { display: flex; flex-direction: column; gap: 6px; }
+.done-item {
+  background: white; border: 1px solid var(--green-light);
+  border-radius: 10px; padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.done-check { color: var(--green); flex-shrink: 0; }
+.done-name { flex: 1; font-size: 0.88rem; font-weight: 500; }
+.done-reopen {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 10px; font-size: 0.75rem; cursor: pointer;
+  color: var(--text-mid); font-family: 'Inter', sans-serif;
+}
+.done-reopen:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ---- VERB CONJUGATOR ---- */
+.conjugator {
+  background: white; border: 1px solid var(--border-light);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 10px;
+}
+.conjugator-header {
+  background: #EEF2FF; padding: 14px 18px;
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.conjugator-header h3 { font-family: "Lora", serif; font-size: 1rem; color: var(--blue-dark); flex: 1; }
+.conjugator-body { display: none; padding: 18px; }
+.conjugator.open .conjugator-body { display: block; }
+.conjugator.open .conj-chevron { transform: rotate(180deg); }
+.conj-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.conj-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-size: 0.95rem; font-family: "Inter", sans-serif; color: var(--text);
+}
+.conj-input:focus { outline: none; border-color: var(--blue); }
+.conj-btn {
+  background: var(--blue); color: white; border: none;
+  border-radius: 8px; padding: 10px 18px; font-size: 0.88rem;
+  font-weight: 600; cursor: pointer; font-family: "Inter", sans-serif; white-space: nowrap;
+}
+.conj-btn:hover { background: var(--blue-dark); }
+.conj-btn:disabled { background: var(--border); cursor: not-allowed; }
+.tense-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.tense-tab {
+  padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: white;
+  color: var(--text-mid); font-family: "Inter", sans-serif; transition: all 0.15s;
+}
+.tense-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+.tense-tab.locked { opacity: 0.4; cursor: not-allowed; }
+.conj-result { display: none; }
+.conj-result.show { display: block; }
+.conj-verb-title { font-family: "Lora", serif; font-size: 1.1rem; font-weight: 600; color: var(--blue-dark); margin-bottom: 4px; }
+.conj-verb-sub { font-size: 0.8rem; color: var(--text-mid); margin-bottom: 14px; }
+.conj-table { width: 100%; border-collapse: collapse; }
+.conj-table tr { border-bottom: 1px solid var(--border-light); }
+.conj-table tr:last-child { border-bottom: none; }
+.conj-table td { padding: 9px 8px; font-size: 0.9rem; }
+.conj-table td:first-child { color: var(--text-mid); font-size: 0.82rem; width: 90px; }
+.conj-table td:nth-child(2) { font-weight: 600; color: var(--blue-dark); }
+.conj-table td:last-child { color: var(--text-mid); font-size: 0.82rem; font-style: italic; }
+.conj-spinner { text-align: center; color: var(--text-mid); font-size: 0.88rem; padding: 16px; }
+.add-topic-box {
+  background: white; border: 1px solid var(--border-light);
+  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px;
+}
+.add-topic-box h4 {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-mid); margin-bottom: 10px;
+}
+.add-topic-row { display: flex; gap: 8px; }
+.add-topic-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px; font-size: 0.88rem; font-family: "Inter", sans-serif; color: var(--text);
+}
+.add-topic-input:focus { outline: none; border-color: var(--blue); }
+.add-topic-btn {
+  background: var(--blue); color: white; border: none;
+  border-radius: 8px; padding: 9px 16px; font-size: 0.88rem;
+  font-weight: 600; cursor: pointer; font-family: "Inter", sans-serif;
+}
+.add-topic-btn:hover { background: var(--blue-dark); }
+
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(15,42,100,0.75);
+  display: none; align-items: center; justify-content: center;
+  z-index: 999; flex-direction: column; gap: 16px;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: #93C5FD; border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay p { color: white; font-family: 'Lora', serif; font-style: italic; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text); color: white; padding: 10px 20px;
+  border-radius: 99px; font-size: 0.85rem; z-index: 9999;
+  transition: transform 0.3s; white-space: nowrap; max-width: 90vw;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { background: var(--red); }
+
+@media (max-width: 680px) {
+  header { flex-wrap: wrap; padding: 10px 14px; gap: 8px; }
+  .header-title { font-size: 1.05rem; }
+  .api-wrap { max-width: 100%; width: 100%; }
+  .api-wrap label { display: none; }
+  .api-wrap input { font-size: 0.85rem; padding: 8px 12px; }
+  .layout { flex-direction: column; }
+  .sidebar {
+    width: 100%; position: static; height: auto;
+    border-right: none; border-bottom: 2px solid var(--border);
+    padding: 14px 14px;
+  }
+  .upload-zone { padding: 16px 12px; }
+  .upload-zone .icon { font-size: 1.6rem; margin-bottom: 6px; }
+  .main { padding: 14px 12px; }
+  .lesson-section { padding: 14px 14px; }
+  .card-header { padding: 13px 13px; }
+  .card-actions { flex-direction: column; }
+  .card-actions .btn-done,
+  .card-actions .btn-flag { width: 100%; padding: 12px; font-size: 0.9rem; text-align: center; }
+  .conj-input-row { flex-direction: column; }
+  .conj-btn { width: 100%; }
+  .add-topic-row { flex-direction: column; }
+  .add-topic-btn { width: 100%; padding: 11px; }
+  .done-item { flex-wrap: wrap; gap: 6px; }
+  .done-reopen { width: 100%; text-align: center; padding: 7px; }
+  .plan-top h2 { font-size: 1.25rem; }
+  .section-head { font-size: 0.68rem; margin: 18px 0 8px; }
+  .lesson-table th, .lesson-table td { padding: 7px 8px; font-size: 0.82rem; }
+  .example-it { font-size: 0.88rem; }
+  .example-en { font-size: 0.8rem; }
+  .tense-tabs { gap: 6px; }
+  .tense-tab { padding: 6px 14px; font-size: 0.82rem; }
+  .toast { font-size: 0.8rem; padding: 9px 16px; bottom: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">Il Mio <span>Piano</span> 🇮🇹</div>
+  <div class="api-wrap">
+    <label>OpenAI Key:</label>
+    <input type="password" id="apiKey" placeholder="sk-..." />
+  </div>
+  <div id="syncStatus" style="font-size:0.72rem;opacity:0.7;white-space:nowrap;color:white"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">📸</div>
+      <p>Tap or drop your <strong>Duolingo screenshots</strong> here</p>
+      <p style="margin-top:6px;font-size:0.74rem;">PNG or JPG • multiple files OK</p>
+      <input type="file" id="fileInput" accept="image/*" multiple>
+    </div>
+
+    <div class="thumbs-section" id="thumbsSection">
+      <h4>📷 Ready to analyse</h4>
+      <div id="thumbsContainer"></div>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" disabled>
+      ✨ Analyse &amp; Build My Plan
+    </button>
+
+    <div class="how-it-works">
+      <strong>How to use:</strong>
+      1. Upload Duolingo screenshots<br>
+      2. Tap Analyse — AI builds your lessons<br>
+      3. Open any topic to study<br>
+      4. Mark done when you feel confident ✓<br>
+      5. Flag for review 🔁 to come back later
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="empty-state" id="emptyState">
+      <div class="big">🍝</div>
+      <h2>Benvenuta!</h2>
+      <p>Upload a few Duolingo screenshots — anything confusing or that you don't understand. The AI will create your personal Italian lesson plan.</p>
+    </div>
+    <div id="planContent" style="display:none"></div>
+  </main>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Analysing your screenshots...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let screenshots = [];
+let studyPlan = null;
+
+const SUPA_URL = 'https://azcprcrvcscobgialwpv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6Y3ByY3J2Y3Njb2JnaWFsd3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDgzNjAsImV4cCI6MjA4NzYyNDM2MH0.6fjcEykxYYXdGu60fYeoD2sRvflatws_jF1ISPmqf9o';
+const USER_ID = 'renata_main'; // single user app
+
+async function save() {
+  try {
+    // Always keep local backup
+    localStorage.setItem('ilMioPiano_v3', JSON.stringify({ studyPlan }));
+    // Save to Supabase
+    const payload = { user_id: USER_ID, plan_data: JSON.stringify(studyPlan) };
+    await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.${USER_ID}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    await fetch(`${SUPA_URL}/rest/v1/study_plan`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { console.warn('Cloud save failed, local backup kept', e); }
+}
+
+async function loadSaved() {
+  try {
+    // Try cloud first
+    const res = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.${USER_ID}&select=plan_data`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].plan_data) {
+      studyPlan = JSON.parse(rows[0].plan_data);
+      localStorage.setItem('ilMioPiano_v3', JSON.stringify({ studyPlan }));
+      renderPlan();
+      return;
+    }
+  } catch(e) { console.warn('Cloud load failed, trying local', e); }
+  // Fallback to local
+  try {
+    const d = JSON.parse(localStorage.getItem('ilMioPiano_v3') || '{}');
+    if (d.studyPlan) { studyPlan = d.studyPlan; renderPlan(); }
+  } catch(e) {}
+}
+
+// Upload
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const analyzeBtn = document.getElementById('analyzeBtn');
+
+function triggerUpload(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  fileInput.click();
+}
+uploadZone.addEventListener('click', triggerUpload);
+uploadZone.addEventListener('touchend', triggerUpload);
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => { screenshots.push({ name: file.name, dataUrl: e.target.result }); renderThumbs(); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderThumbs() {
+  const sec = document.getElementById('thumbsSection');
+  const container = document.getElementById('thumbsContainer');
+  if (!screenshots.length) { sec.style.display = 'none'; analyzeBtn.disabled = true; return; }
+  sec.style.display = 'block';
+  analyzeBtn.disabled = false;
+  container.innerHTML = '';
+  screenshots.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'thumb';
+    d.innerHTML = `<img src="${s.dataUrl}"><span class="tname">${s.name}</span><span class="tdel" data-i="${i}">✕</span>`;
+    container.appendChild(d);
+  });
+  container.querySelectorAll('.tdel').forEach(btn => btn.addEventListener('click', () => {
+    screenshots.splice(parseInt(btn.dataset.i), 1); renderThumbs();
+  }));
+}
+
+// Analyse
+analyzeBtn.addEventListener('click', async () => {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showToast('Please enter your OpenAI API key', true); return; }
+  if (!screenshots.length) { showToast('Please upload at least one screenshot', true); return; }
+
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  try {
+    const existingContext = studyPlan
+      ? `\n\nEXISTING PLAN (preserve these topics and their statuses, only add NEW ones):\n${JSON.stringify(studyPlan.topics.map(t => ({ id: t.id, title: t.title, status: t.status })))}`
+      : '';
+
+    const prompt = `You are Renata's primary Italian language teacher. She is a complete beginner — she has NO grammar background in Italian. Duolingo helps her learn vocabulary, but YOU are responsible for teaching her all the grammar from scratch, with full explanations, as if she has never studied Italian grammar before. Your tone is warm, patient, and encouraging — like a private tutor who genuinely wants her to succeed.
+
+Carefully analyse the ${screenshots.length} Duolingo screenshot(s). Identify every grammar concept, vocabulary item, or sentence pattern the student seems confused about.${existingContext}
+
+Create a structured beginner study plan with thorough, detailed lessons.
+
+TITLE RULES: be specific. Good: 'Verb essere (to be)', 'Articles: il, la, lo, un, una', 'This vs That: questo e quello'. Bad: 'Italian verbs', 'Grammar basics'.
+
+LESSON STRUCTURE — every topic must have all these fields:
+- explanation: Write as a real teacher explaining to someone who knows NOTHING. Start from absolute zero. 4-6 paragraphs minimum. Explain the concept, then the rule, then why it works this way. Include a full grammar or conjugation table using | pipe separators whenever relevant. Do not skip steps — Renata prefers a long clear explanation over a short one with gaps.
+- examples: 5-6 real, practical sentences a beginner would actually say in everyday life. Always with Italian + English. Make them relatable and natural.
+- common_mistakes: 2-3 very specific mistakes beginners make on THIS exact topic. Say why the mistake happens (often because of English habits) and exactly how to correct it.
+- lesson_summary: 5-6 bullet points (use • symbol) that work as a personal cheat sheet. Short, clear, memorable. The student should be able to glance at these and remember the whole lesson.
+
+Respond with ONLY valid JSON, no markdown fences:
+{
+  "summary": "2-3 warm encouraging sentences about what the screenshots show",
+  "topics": [
+    {
+      "id": "verb_essere",
+      "title": "Verb essere (to be) — present tense",
+      "description": "The most important verb in Italian — used constantly to describe people, places and things.",
+      "tags": ["grammar", "verbs"],
+      "priority": 1,
+      "status": "upcoming",
+      "explanation": "Essere means to be and is the most important verb in Italian. Every sentence about identity, location, or description uses it.\n\nUnlike English, Italian has a unique form for every pronoun:\n\n| Pronoun | Italian | English |\n|---------|---------|---------|\n| io | sono | I am |\n| tu | sei | you are |\n| lui/lei | e | he/she is |\n| noi | siamo | we are |\n| voi | siete | you all are |\n| loro | sono | they are |\n\nNotice io and loro both use sono — this is one of those things to simply memorise.\n\nEssere is used in three main situations: describing what something IS (Lei e medica), saying where something IS (Siamo a Milano), and describing characteristics (Il gatto e nero).\n\nIn everyday Italian, the pronoun is often dropped. Italians say Sono studentessa far more than Io sono studentessa. The verb ending already tells you who is speaking.",
+      "examples": [
+        { "it": "Io sono una studentessa.", "en": "I am a student (female)." },
+        { "it": "Tu sei molto gentile.", "en": "You are very kind." },
+        { "it": "Marco e un ragazzo italiano.", "en": "Marco is an Italian boy." },
+        { "it": "Noi siamo a Roma per le vacanze.", "en": "We are in Rome for the holidays." },
+        { "it": "Loro sono medici famosi.", "en": "They are famous doctors." }
+      ],
+      "common_mistakes": "Most beginners say io e instead of io sono. The form e belongs only to lui/lei (he/she).\n\nDo not confuse essere with avere (to have) for age and feelings. In Italian: Ho venti anni (I have twenty years), not Sono venti anni.\n\nWatch the accent: e with accent means is. Without accent e means and. They look similar but mean completely different things.",
+      "lesson_summary": "• essere = to be — the most important Italian verb\n• 6 forms: sono, sei, e, siamo, siete, sono\n• Pronouns are optional — the verb form already tells you who\n• Use for: identity, location, and descriptions\n• Do not confuse e (is) with e (and) — the accent matters"
+    }
+  ]
+}
+
+Generate 8-12 topics. Order by priority (1 = most urgent from screenshots). For existing plans, only add genuinely new topics.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 7000,
+        messages: [{
+          role: 'user',
+          content: [
+            ...screenshots.map(s => ({ type: 'image_url', image_url: { url: s.dataUrl } })),
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `API error ${response.status}`);
+    }
+
+    const data = await response.json();
+    let text = data.choices[0].message.content;
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse response — please try again.');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // Preserve ALL existing topics — statuses, done lessons, manual topics
+    if (studyPlan && studyPlan.topics) {
+      const oldMap = {};
+      studyPlan.topics.forEach(t => { oldMap[t.id] = t; });
+
+      // Carry over statuses for topics the AI kept
+      parsed.topics.forEach(t => {
+        if (oldMap[t.id]) t.status = oldMap[t.id].status;
+      });
+
+      // Re-add any old topics the AI dropped (done, review, or manual)
+      const newIds = new Set(parsed.topics.map(t => t.id));
+      studyPlan.topics.forEach(old => {
+        if (!newIds.has(old.id)) {
+          // Always keep done, review, and manually-added topics
+          if (old.status === 'done' || old.status === 'review' || old.id.startsWith('manual_')) {
+            parsed.topics.push(old);
+          }
+        }
+      });
+    }
+
+    studyPlan = { ...parsed, updatedAt: new Date().toLocaleString() };
+    save();
+    screenshots = [];
+    renderThumbs();
+    renderPlan();
+    showToast('Your study plan is ready! 🎉');
+  } catch(e) {
+    showToast(e.message, true);
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+});
+
+// Render
+function renderPlan() {
+  if (!studyPlan) return;
+  document.getElementById('emptyState').style.display = 'none';
+  const planContent = document.getElementById('planContent');
+  planContent.style.display = 'block';
+
+  const topics = studyPlan.topics || [];
+  const doneTopics = topics.filter(t => t.status === 'done');
+  const activeTopics = topics.filter(t => t.status !== 'done');
+  const pct = topics.length ? Math.round((doneTopics.length / topics.length) * 100) : 0;
+
+  planContent.innerHTML = `
+    <div class="plan-top">
+      <h2>Your Italian Study Plan</h2>
+      <div class="plan-summary">${studyPlan.summary || ''}</div>
+      <div class="updated-pill">✓ Updated ${studyPlan.updatedAt || 'just now'}</div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-label-row">
+        <span>Overall progress</span>
+        <strong>${doneTopics.length} / ${topics.length} lessons completed</strong>
+      </div>
+      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+    </div>
+    <div id="activeContainer"></div>
+
+    <!-- Verb Conjugator -->
+    <div class="section-head">🔤 Verb Conjugator</div>
+    <div class="conjugator" id="conjugatorBlock">
+      <div class="conjugator-header" id="conjugatorToggle">
+        <span class="conj-icon">🔤</span>
+        <h3>Look up any verb form</h3>
+        <span class="chevron conj-chevron" style="color:var(--text-light);font-size:0.8rem;transition:transform 0.2s">▼</span>
+      </div>
+      <div class="conjugator-body">
+        <div class="conj-input-row">
+          <input class="conj-input" id="conjInput" type="text" placeholder="Type any verb, e.g. conosce, andare, sei..." />
+          <button class="conj-btn" id="conjBtn">Show forms</button>
+        </div>
+        <div class="tense-tabs">
+          <button class="tense-tab active" data-tense="present">Present</button>
+          <button class="tense-tab active" data-tense="future">Future</button>
+          <button class="tense-tab locked" data-tense="past" title="Coming when you start learning past tense!">Past 🔒</button>
+        </div>
+        <div class="conj-result" id="conjResult"></div>
+      </div>
+    </div>
+
+    <!-- Add topic manually -->
+    <div class="section-head">➕ Add a Topic Manually</div>
+    <div class="add-topic-box">
+      <h4>Add your own topic to the plan</h4>
+      <div class="add-topic-row">
+        <input class="add-topic-input" id="addTopicInput" type="text" placeholder='e.g. "Numbers 1-20" or "Days of the week"' />
+        <button class="add-topic-btn" id="addTopicBtn">Add</button>
+      </div>
+    </div>
+
+    ${doneTopics.length ? '<div class="section-head">✅ Completed Lessons</div><div class="done-list" id="doneList"></div>' : ''}
+  `;
+
+  const container = document.getElementById('activeContainer');
+  const reviewTopics = activeTopics.filter(t => t.status === 'review');
+  const upcomingTopics = activeTopics.filter(t => t.status !== 'review');
+
+  if (reviewTopics.length) {
+    const h = document.createElement('div');
+    h.className = 'section-head';
+    h.textContent = '🔁 Flagged for Review';
+    container.appendChild(h);
+    reviewTopics.forEach((t, i) => container.appendChild(makeCard(t, i + 1)));
+  }
+
+  if (upcomingTopics.length) {
+    const h = document.createElement('div');
+    h.className = 'section-head';
+    h.textContent = '📚 Your Lessons';
+    container.appendChild(h);
+    upcomingTopics.forEach((t, i) => container.appendChild(makeCard(t, i + 1)));
+  }
+
+  if (doneTopics.length) {
+    const doneList = document.getElementById('doneList');
+    doneTopics.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'done-item';
+      item.innerHTML = `<span class="done-check">✅</span><span class="done-name">${t.title}</span><button class="done-reopen" data-id="${t.id}">Open lesson</button>`;
+      item.querySelector('.done-reopen').addEventListener('click', () => updateStatus(t.id, 'upcoming'));
+      doneList.appendChild(item);
+    });
+  }
+}
+
+function makeCard(t, num) {
+  const card = document.createElement('div');
+  card.className = `topic-card ${t.status}`;
+
+  const statusLabel = t.status === 'review' ? '🔁 Review' : 'Upcoming';
+  const examplesHtml = (t.examples || []).map(ex => `
+    <div class="example-row">
+      <div class="example-it">🇮🇹 ${ex.it}</div>
+      <div class="example-en">🇬🇧 ${ex.en}</div>
+    </div>`).join('');
+
+  const uid = t.id + '_' + Math.random().toString(36).slice(2, 6);
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-num">${num}</div>
+      <div class="card-info">
+        <div class="card-title">${t.title}</div>
+        <div class="card-desc">${t.description || ''}</div>
+      </div>
+      <div class="card-right">
+        <span class="status-pill ${t.status}">${statusLabel}</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="lesson-body">
+      ${t.explanation ? `
+        <div class="lesson-section">
+          <div class="lesson-section-label lbl-explain">📖 Explanation</div>
+          <div class="lesson-text">${renderLesson(t.explanation)}</div>
+        </div>` : ''}
+      ${examplesHtml ? `
+        <div class="lesson-section">
+          <div class="lesson-section-label lbl-examples">💬 Examples</div>
+          <div class="examples-grid">${examplesHtml}</div>
+        </div>` : ''}
+      ${t.common_mistakes ? `
+        <div class="lesson-section">
+          <div class="lesson-section-label lbl-mistakes">⚠️ Common Mistakes</div>
+          <div class="lesson-text">${renderLesson(t.common_mistakes)}</div>
+        </div>` : ''}
+      ${t.lesson_summary ? `
+        <div class="lesson-section" style="background:#F0F7FF">
+          <div class="lesson-section-label" style="color:var(--blue-dark)">📌 Key Takeaways</div>
+          <div class="lesson-text">${renderLesson(t.lesson_summary)}</div>
+        </div>` : ''}
+      <div class="card-actions">
+        <button class="btn-done" data-id="${t.id}">✓ Mark as Done</button>
+        <button class="btn-flag" data-id="${t.id}">🔁 Flag for Review</button>
+      </div>
+    </div>`;
+
+  card.querySelector('.card-header').addEventListener('click', () => card.classList.toggle('open'));
+  card.querySelector('.btn-done').addEventListener('click', e => { e.stopPropagation(); updateStatus(t.id, 'done'); });
+  card.querySelector('.btn-flag').addEventListener('click', e => { e.stopPropagation(); updateStatus(t.id, 'review'); });
+
+  return card;
+}
+
+function updateStatus(id, status) {
+  const t = studyPlan.topics.find(t => t.id === id);
+  if (t) { t.status = status; save(); renderPlan(); }
+}
+
+// Render lesson text: convert pipe tables to HTML tables, newlines to <br>
+function renderLesson(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  let html = '';
+  let inTable = false;
+  let tableRows = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|')) {
+      // Table row
+      if (!inTable) { inTable = true; tableRows = []; }
+      // Skip separator rows like |---|---|
+      if (line.replace(/[|\-:\s]/g, '') === '') continue;
+      const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');
+      tableRows.push(cells);
+    } else {
+      if (inTable) {
+        // Flush table
+        html += '<div class="lesson-table-wrap"><table class="lesson-table">';
+        tableRows.forEach((row, ri) => {
+          const tag = ri === 0 ? 'th' : 'td';
+          html += '<tr>' + row.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+        });
+        html += '</table></div>';
+        inTable = false;
+        tableRows = [];
+      }
+      if (line === '') {
+        html += '<br>';
+      } else {
+        html += line + '<br>';
+      }
+    }
+  }
+  if (inTable) {
+    html += '<div class="lesson-table-wrap"><table class="lesson-table">';
+    tableRows.forEach((row, ri) => {
+      const tag = ri === 0 ? 'th' : 'td';
+      html += '<tr>' + row.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+    });
+    html += '</table></div>';
+  }
+  return html;
+}
+
+function showToast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+
+// ---- VERB CONJUGATOR ----
+let activeTenses = ['present', 'future'];
+let conjCache = {};
+
+document.addEventListener('click', e => {
+  // Skip if click came from upload zone — let it handle itself
+  if (e.target.closest('#uploadZone')) return;
+  // Toggle conjugator open/close
+  if (e.target.closest('#conjugatorToggle')) {
+    document.getElementById('conjugatorBlock').classList.toggle('open');
+  }
+  // Tense tab clicks
+  if (e.target.classList.contains('tense-tab') && !e.target.classList.contains('locked')) {
+    e.target.classList.toggle('active');
+    const tense = e.target.dataset.tense;
+    if (activeTenses.includes(tense)) activeTenses = activeTenses.filter(t => t !== tense);
+    else activeTenses.push(tense);
+  }
+  // Conjugate button
+  if (e.target.id === 'conjBtn') conjugateVerb();
+  // Add topic button
+  if (e.target.id === 'addTopicBtn') addManualTopic();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'conjInput') conjugateVerb();
+});
+
+async function conjugateVerb() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showToast('Please enter your OpenAI API key first', true); return; }
+  const verb = document.getElementById('conjInput').value.trim();
+  if (!verb) { showToast('Please type a verb first', true); return; }
+  if (!activeTenses.length) { showToast('Please select at least one tense', true); return; }
+
+  const cacheKey = verb.toLowerCase() + '_' + activeTenses.sort().join('_');
+  const resultEl = document.getElementById('conjResult');
+
+  if (conjCache[cacheKey]) {
+    resultEl.innerHTML = conjCache[cacheKey];
+    resultEl.classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('conjBtn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  resultEl.innerHTML = '<div class="conj-spinner">Looking up verb forms...</div>';
+  resultEl.classList.add('show');
+
+  const tenseNames = { present: 'Present (Presente)', future: 'Future (Futuro Semplice)' };
+  const tensesRequested = activeTenses.map(t => tenseNames[t]).join(' and ');
+
+  try {
+    const prompt = `The Italian student typed: "${verb}". This might be any form of an Italian verb (infinitive or conjugated).
+
+1. Identify the infinitive form of this verb
+2. Provide the full conjugation table for: ${tensesRequested}
+
+Respond ONLY with valid JSON:
+{
+  "infinitive": "conoscere",
+  "meaning": "to know (a person or place)",
+  "tenses": [
+    {
+      "name": "Present (Presente)",
+      "rows": [
+        { "pronoun": "io", "form": "conosco", "english": "I know" },
+        { "pronoun": "tu", "form": "conosci", "english": "you know" },
+        { "pronoun": "lui/lei", "form": "conosce", "english": "he/she knows" },
+        { "pronoun": "noi", "form": "conosciamo", "english": "we know" },
+        { "pronoun": "voi", "form": "conoscete", "english": "you all know" },
+        { "pronoun": "loro", "form": "conoscono", "english": "they know" }
+      ]
+    }
+  ]
+}`;
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    let text = data.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+
+    let html = `<div class="conj-verb-title">${parsed.infinitive}</div>`;
+    html += `<div class="conj-verb-sub">${parsed.meaning}</div>`;
+
+    parsed.tenses.forEach(tense => {
+      html += `<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--blue);margin:14px 0 8px">${tense.name}</div>`;
+      html += '<table class="conj-table">';
+      tense.rows.forEach(row => {
+        html += `<tr><td>${row.pronoun}</td><td>${row.form}</td><td>${row.english}</td></tr>`;
+      });
+      html += '</table>';
+    });
+
+    conjCache[cacheKey] = html;
+    resultEl.innerHTML = html;
+
+  } catch(err) {
+    resultEl.innerHTML = '<div class="conj-spinner" style="color:var(--red)">Could not load — please try again</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Show forms';
+  }
+}
+
+// ---- MANUAL TOPIC ADD ----
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'addTopicInput') addManualTopic();
+});
+
+async function addManualTopic() {
+  const input = document.getElementById('addTopicInput');
+  const title = input.value.trim();
+  if (!title) return;
+  const apiKey = document.getElementById('apiKey').value.trim();
+
+  if (!studyPlan) {
+    studyPlan = { summary: 'Your personal study plan.', topics: [], updatedAt: new Date().toLocaleString() };
+  }
+
+  const id = 'manual_' + Date.now();
+  // Add placeholder immediately so user sees it
+  studyPlan.topics.push({
+    id, title,
+    description: 'Generating lesson...',
+    tags: [],
+    priority: 99,
+    status: 'upcoming',
+    explanation: '',
+    examples: [],
+    common_mistakes: '',
+    lesson_summary: ''
+  });
+  save();
+  input.value = '';
+  renderPlan();
+  showToast('Generating lesson for: ' + title + '...');
+
+  if (!apiKey) return; // No key = placeholder only
+
+  try {
+    const prompt = `You are an expert Italian teacher. Write a detailed lesson for a complete beginner on this topic: "${title}".
+
+Respond with ONLY valid JSON:
+{
+  "description": "One sentence describing what this lesson covers.",
+  "explanation": "4-6 paragraphs explaining the topic clearly. Include a grammar table using | pipe separators if relevant. Explain the WHY, not just the rule.",
+  "examples": [
+    { "it": "Italian sentence.", "en": "English translation." },
+    { "it": "Italian sentence.", "en": "English translation." },
+    { "it": "Italian sentence.", "en": "English translation." },
+    { "it": "Italian sentence.", "en": "English translation." },
+    { "it": "Italian sentence.", "en": "English translation." }
+  ],
+  "common_mistakes": "2-3 concrete mistakes beginners make on this topic and how to avoid them.",
+  "lesson_summary": "• Key point 1\n• Key point 2\n• Key point 3\n• Key point 4\n• Key point 5"
+}`;
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 3000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    let text = data.choices[0].message.content.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+
+    // Update the topic with full lesson
+    const topic = studyPlan.topics.find(t => t.id === id);
+    if (topic) {
+      topic.description = parsed.description || title;
+      topic.explanation = parsed.explanation || '';
+      topic.examples = parsed.examples || [];
+      topic.common_mistakes = parsed.common_mistakes || '';
+      topic.lesson_summary = parsed.lesson_summary || '';
+    }
+    save();
+    renderPlan();
+    showToast('Lesson ready: ' + title + ' ✓');
+  } catch(e) {
+    showToast('Topic added — could not generate lesson automatically', false);
+  }
+}
+
+loadSaved();
+
+// ---- API KEY SAVE/LOAD ----
+async function saveApiKey(key) {
+  // Save locally
+  try { localStorage.setItem('oai_api_key', key); } catch(e) {}
+  // Save to Supabase in a settings row
+  try {
+    const check = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const existing = await check.json();
+    if (existing && existing.length > 0) {
+      await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ plan_data: key })
+      });
+    } else {
+      await fetch(`${SUPA_URL}/rest/v1/study_plan`, {
+        method: 'POST',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ user_id: 'renata_settings', plan_data: key })
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadApiKey() {
+  // Try Supabase first
+  try {
+    const resp = await fetch(`${SUPA_URL}/rest/v1/study_plan?user_id=eq.renata_settings&select=plan_data`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+    });
+    const rows = await resp.json();
+    if (rows && rows.length > 0 && rows[0].plan_data) {
+      document.getElementById('apiKey').value = rows[0].plan_data;
+      try { localStorage.setItem('oai_api_key', rows[0].plan_data); } catch(e) {}
+      return;
+    }
+  } catch(e) {}
+  // Fallback to localStorage
+  try {
+    const local = localStorage.getItem('oai_api_key');
+    if (local) document.getElementById('apiKey').value = local;
+  } catch(e) {}
+}
+
+loadApiKey();
+
+// Auto-save key when user types it
+let keyTimer;
+document.getElementById('apiKey').addEventListener('input', e => {
+  const val = e.target.value.trim();
+  clearTimeout(keyTimer);
+  if (val.startsWith('sk-') && val.length > 20) {
+    keyTimer = setTimeout(() => {
+      saveApiKey(val);
+      showToast('API key saved — won't need to enter it again ✓');
+    }, 1000);
+  }
+});
+</script>
+</body>
+</html>
